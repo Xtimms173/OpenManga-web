@@ -1,0 +1,83 @@
+#root {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: #a0aeff;
+}
+
+.loader {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background-color: #a0aeff;
+}
+
+.light .loader,
+.card .loader {
+	background-color: white;
+}
+
+.loader:after {
+	content: ' ';
+	width: 48px;
+	height: 48px;
+	position: absolute;
+	top: calc(50% - 24px);
+	left: calc(50% - 24px);
+	border: 3px solid white;
+	border-radius: 50%;
+	border-left-color: transparent;
+	border-right-color: transparent;
+	animation: cssload-spin 650ms infinite linear;
+	-o-animation: cssload-spin 650ms infinite linear;
+	-ms-animation: cssload-spin 650ms infinite linear;
+	-webkit-animation: cssload-spin 650ms infinite linear;
+	-moz-animation: cssload-spin 650ms infinite linear;
+}
+
+.light .loader:after,
+.card .loader:after {
+	border-top-color: #a0aeff;
+	border-bottom-color: #a0aeff;
+}
+
+@keyframes cssload-spin {
+	100%{ transform: rotate(360deg); }
+}
+
+@-o-keyframes cssload-spin {
+	100%{ -o-transform: rotate(360deg); transform: rotate(360deg); }
+}
+
+@-ms-keyframes cssload-spin {
+	100%{ -ms-transform: rotate(360deg); transform: rotate(360deg); }
+}
+
+@-webkit-keyframes cssload-spin {
+	100%{ -webkit-transform: rotate(360deg); transform: rotate(360deg); }
+}
+
+@-moz-keyframes cssload-spin {
+	100%{ -moz-transform: rotate(360deg); transform: rotate(360deg); }
+}
+
+
+#menu .nav-link {
+	width: 100%;
+	color: white;
+	transition: background-color 0.2s;
+}
+
+#menu .nav-link:hover {
+	color: #6e6e6e;
+	background-color: #c7d4ff;
+}
+
+#menu .nav-link.active {
+	background-color: white;
+	color: #6e6e6e;
+}
