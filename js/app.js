@@ -15,7 +15,20 @@ class App {
 		}
 	}
 
+	static empty(target) {
+		target.contents().filter(function () {
+			return !$(this).is('.loader');
+		}).remove();
+		return target;
+	}
+
 	static loader(where, callback) {
+		if (where.find('.loader').length) {
+			if (callback !== undefined) {
+				callback();
+			}
+			return;
+		}
 		where.append('<div class="loader" style="display: none;"></div>');
 		where.find('.loader').fadeIn(callback);
 	}
@@ -24,7 +37,7 @@ class App {
 		where.find('.loader').fadeOut(function () {
 			$(this).remove();
 			if (callback !== undefined) {
-				callback()
+				callback();
 			}
 		});
 	}
@@ -64,12 +77,8 @@ class App {
 				url: what,
 				cache: false
 			}).done(function (html) {
-				App.noloader(where, function () {
-					where.empty().append(html);
-					if (callback !== undefined) {
-						callback(where);
-					}
-				});
+				App.empty(where).append(html);
+				App.noloader(where, callback);
 			}).fail(function (jqXHR, textStatus) {
 				App.noloader(where);
 				App.alert(app.alerts, null, textStatus);
@@ -116,7 +125,7 @@ class App {
 		this.open('content.html', this.root, function (root) {
 			let nav = new Navigation(root.find('#menu'));
 			//nav.setActiveItem(0);
-			app.devices()
+			app.devices();
 		});
 	}
 
@@ -125,67 +134,81 @@ class App {
 	}
 
 	logout() {
-		Cookies.remove('token');
-		app.auth();
+		App.loader(this.root, function () {
+			Cookies.remove('token');
+			$.ajax({
+				url: app.url + '/user',
+				method: 'DELETE',
+				data: {self: 1},
+				headers: {
+					'X-AuthToken': Cookies.get('token')
+				},
+				xhrFields: {
+					withCredentials: true
+				}
+			}).done(function (data) {
+				app.auth();
+			});
+		});
 	}
 
 	devices() {
 		const target = $('#target');
-		target.empty();
-		App.loader(target);
-		$.ajax({
-			url: app.url + '/user',
-			method: 'GET',
-			headers: {
-				"X-AuthToken":Cookies.get('token'),
-			},
-			xhrFields: {
-				withCredentials: true
-			}
-		}).done(function (data) {
-			console.log(data);
-			if (data.state === 'success') {
-				let str = '';
-				data.devices.forEach(function(item, i) {
-					str += `
+		App.loader(target, function () {
+			App.empty(target);
+			$.ajax({
+				url: app.url + '/user',
+				method: 'GET',
+				headers: {
+					'X-AuthToken': Cookies.get('token')
+				},
+				xhrFields: {
+					withCredentials: true
+				}
+			}).done(function (data) {
+				console.log(data);
+				if (data.state === 'success') {
+					let str = '';
+					data.devices.forEach(function (item, i) {
+						str += `
 							<div class="col-12 card mt-2" id="token_${item.id}">
 								<div class="card-block">
 									${item.device}
 									<a href="#" class="text-danger pull-right fa fa-times" aria-hidden="true" onclick="app.detach(${item.id}); return false;"></a>
 								</div>
 							</div>`;
-				});
-
-				target.append(str);
+					});
+					target.append(str);
+					App.noloader(target);
+				} else {
+					App.alert(app.alerts, null, data.message);
+				}
+			}).fail(function (jqXHR, textStatus) {
 				App.noloader(target);
-			} else {
-				App.alert(app.alerts, null, data.message);
-			}
-		}).fail(function (jqXHR, textStatus) {
-			App.noloader(target);
-			App.alert(app.alerts, null, textStatus);
+				App.alert(app.alerts, null, textStatus);
+			});
 		});
 	}
 
 	history() {
 		const target = $('#target');
-		target.empty();
-		App.loader(target);
-		$.ajax({
-			url: app.url + '/history',
-			method: 'GET',
-			headers: {
-				"X-AuthToken":Cookies.get('token'),
-			},
-			xhrFields: {
-				withCredentials: true
-			}
-		}).done(function (data) {
-			console.log(data);
-			if (data.state === 'success') {
-				let str = '<div class="card-columns mt-2">';
-				data.all.forEach(function(item, i) {
-					str += `<div class="card">
+		App.loader(target, function () {
+			App.empty(target);
+			$.ajax({
+				url: app.url + '/history',
+				method: 'GET',
+				headers: {
+					'X-AuthToken': Cookies.get('token')
+				},
+				xhrFields: {
+					withCredentials: true
+				}
+			}).done(function (data) {
+				console.log(data);
+				if (data.state === 'success') {
+					let str = '<div class="card-columns mt-2">';
+					data.all.forEach(function (item, i) {
+						str += `<div class="card" id="manga_${item.manga.id}">
 								<img class="card-img-top img-fluid mx-auto d-block" src="${item.manga.preview}">
 								<div class="card-block">
 									<h4 class="card-title">${item.manga.name}</h4>
@@ -193,41 +216,43 @@ class App {
 									<p class="card-text"><small class="text-muted">Last updated: ${new Date(item.timestamp).toISOString().slice(0, 10)}</small></p>
 								</div>
 								<div class="card-footer text-right">
+									<a class="fa fa-trash-o" href="#" onclick="app.remove('history', ${item.manga.id}); return false;" title="Remove this manga"></a>
 									<a class="fa fa-external-link" target="_blank" href="${item.manga.path}" title="Open in website"></a>
 								</div>
 							</div>`;
-				});
-				str += '</div>';
-				target.append(str);
+					});
+					str += '</div>';
+					target.append(str);
+					App.noloader(target);
+				} else {
+					App.alert(app.alerts, null, data.message);
+				}
+			}).fail(function (jqXHR, textStatus) {
 				App.noloader(target);
-			} else {
-				App.alert(app.alerts, null, data.message);
-			}
-		}).fail(function (jqXHR, textStatus) {
-			App.noloader(target);
-			App.alert(app.alerts, null, textStatus);
+				App.alert(app.alerts, null, textStatus);
+			});
 		});
 	}
 
 	favourites() {
 		const target = $('#target');
-		target.empty();
-		App.loader(target);
-		$.ajax({
-			url: app.url + '/favourites',
-			method: 'GET',
-			headers: {
-				"X-AuthToken":Cookies.get('token'),
-			},
-			xhrFields: {
-				withCredentials: true
-			}
-		}).done(function (data) {
-			console.log(data);
-			if (data.state === 'success') {
-				let str = '<div class="card-columns mt-2">';
-				data.all.forEach(function(item, i) {
-					str += `<div class="card">
+		App.loader(target, function () {
+			App.empty(target);
+			$.ajax({
+				url: app.url + '/favourites',
+				method: 'GET',
+				headers: {
+					'X-AuthToken': Cookies.get('token')
+				},
+				xhrFields: {
+					withCredentials: true
+				}
+			}).done(function (data) {
+				console.log(data);
+				if (data.state === 'success') {
+					let str = '<div class="card-columns mt-2">';
+					data.all.forEach(function (item, i) {
+						str += `<div class="card" id="manga_${item.manga.id}">
 								<img class="card-img-top img-fluid mx-auto d-block" src="${item.manga.preview}">
 								<div class="card-block">
 									<h4 class="card-title">${item.manga.name}</h4>
@@ -235,19 +260,21 @@ class App {
 									<p class="card-text"><small class="text-muted">Last updated: ${new Date(item.timestamp).toISOString().slice(0, 10)}</small></p>
 								</div>
 								<div class="card-footer text-right">
+									<a class="fa fa-trash-o" href="#"  onclick="app.remove('favourites', ${item.manga.id}); return false;" title="Remove this manga"></a>
 									<a class="fa fa-external-link" target="_blank" href="${item.manga.path}" title="Open in website"></a>
 								</div>
 							</div>`;
-				});
-				str += '</div>';
-				target.append(str);
+					});
+					str += '</div>';
+					target.append(str);
+					App.noloader(target);
+				} else {
+					App.alert(app.alerts, null, data.message);
+				}
+			}).fail(function (jqXHR, textStatus) {
 				App.noloader(target);
-			} else {
-				App.alert(app.alerts, null, data.message);
-			}
-		}).fail(function (jqXHR, textStatus) {
-			App.noloader(target);
-			App.alert(app.alerts, null, textStatus);
+				App.alert(app.alerts, null, textStatus);
+			});
 		});
 	}
 
@@ -259,13 +286,32 @@ class App {
 				method: 'DELETE',
 				data: {id: device_id},
 				headers: {
-					"X-AuthToken":Cookies.get('token'),
+					'X-AuthToken': Cookies.get('token')
 				},
 				xhrFields: {
 					withCredentials: true
 				}
 			}).done(function (data) {
 				row.slideUp();
+			});
+		});
+	}
+
+	remove(subject, manga_id) {
+		const card = $('#manga_' + manga_id);
+		App.loader(card, function () {
+			$.ajax({
+				url: app.url + '/' + subject,
+				method: 'DELETE',
+				data: {id: manga_id},
+				headers: {
+					'X-AuthToken': Cookies.get('token')
+				},
+				xhrFields: {
+					withCredentials: true
+				}
+			}).done(function (data) {
+				card.fadeOut();
 			});
 		});
 	}
