@@ -3,7 +3,7 @@ class App {
 	constructor() {
 		this.root = $('#root');
 		this.alerts = $('#alerts');
-		this.url = 'http://46.36.36.38:5000/api';
+		this.url = 'https://46.36.36.38:5000/api';
 		//this.url = 'http://192.168.0.104:5000/api';
 	}
 
