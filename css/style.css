@@ -103,6 +103,10 @@
 	color: #6e6e6e;
 }
 
+.card, .card * {
+	border-radius: 0 !important;
+}
+
 .card-columns {
 	column-count: 4;
 }

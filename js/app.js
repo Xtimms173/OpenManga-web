@@ -3,7 +3,7 @@ class App {
 	constructor() {
 		this.root = $('#root');
 		this.alerts = $('#alerts');
-		this.url = 'http://192.168.0.104:5000/api';
+		this.url = 'http://46.36.36.38:5000/api';
 	}
 
 	init() {
@@ -177,7 +177,7 @@ class App {
 									<p class="card-text"><small class="text-muted">Last updated: ${new Date(item.timestamp).toISOString().slice(0, 10)}</small></p>
 								</div>
 								<div class="card-footer text-right">
-									<a class="fa fa-external-link" target="_blank" href="${item.manga.path}"></a>
+									<a class="fa fa-external-link" target="_blank" href="${item.manga.path}" title="Open in website"></a>
 								</div>
 							</div>`;
 				});
@@ -219,7 +219,7 @@ class App {
 									<p class="card-text"><small class="text-muted">Last updated: ${new Date(item.timestamp).toISOString().slice(0, 10)}</small></p>
 								</div>
 								<div class="card-footer text-right">
-									<a class="fa fa-external-link" target="_blank" href="${item.manga.path}"></a>
+									<a class="fa fa-external-link" target="_blank" href="${item.manga.path}" title="Open in website"></a>
 								</div>
 							</div>`;
 				});
