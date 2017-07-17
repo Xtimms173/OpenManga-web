@@ -3,7 +3,8 @@ class App {
 	constructor() {
 		this.root = $('#root');
 		this.alerts = $('#alerts');
-		this.url = 'http://46.36.36.38:5000/api';
+		//this.url = 'http://46.36.36.38:5000/api';
+		this.url = 'http://192.168.0.104:5000/api';
 	}
 
 	init() {
@@ -14,14 +15,17 @@ class App {
 		}
 	}
 
-	static loader(where) {
+	static loader(where, callback) {
 		where.append('<div class="loader" style="display: none;"></div>');
-		where.find('.loader').fadeIn();
+		where.find('.loader').fadeIn(callback);
 	}
 
-	static noloader(where) {
+	static noloader(where, callback) {
 		where.find('.loader').fadeOut(function () {
 			$(this).remove();
+			if (callback !== undefined) {
+				callback()
+			}
 		});
 	}
 
@@ -55,17 +59,21 @@ class App {
 		if (where === undefined) {
 			where = this.root;
 		}
-		App.loader(where);
-		$.ajax({
-			url: what,
-			cache: false
-		}).done(function (html) {
-			where.empty().append(html);
-			if (callback !== undefined) {
-				callback(where);
-			}
-		}).fail(function (jqXHR, textStatus) {
-			App.alert(app.alerts, null, textStatus);
+		App.loader(where, function () {
+			$.ajax({
+				url: what,
+				cache: false
+			}).done(function (html) {
+				App.noloader(where, function () {
+					where.empty().append(html);
+					if (callback !== undefined) {
+						callback(where);
+					}
+				});
+			}).fail(function (jqXHR, textStatus) {
+				App.noloader(where);
+				App.alert(app.alerts, null, textStatus);
+			});
 		});
 	}
 
@@ -73,10 +81,13 @@ class App {
 		form = $(form);
 		App.loader(form);
 		this.alerts.empty();
+		const data = form.serializeArray();
+		data.push({name: 'device', value: 'Web client'});
+		console.log(data);
 		$.ajax({
 			url: this.url + '/user',
 			method: 'POST',
-			data: form.serializeArray(),
+			data: data,
 			xhrFields: {
 				withCredentials: true
 			}
@@ -84,14 +95,20 @@ class App {
 			App.noloader(form);
 			console.log(data);
 			if (data.state === 'success') {
-				Cookies.set('token', data.token);
-				app.content()
+				form.fadeOut(function () {
+					Cookies.set('token', data.token);
+					app.content();
+				});
 			} else {
 				App.alert(app.alerts, null, data.message);
 			}
 		}).fail(function (jqXHR, textStatus) {
 			App.noloader(form);
-			App.alert(app.alerts, null, textStatus);
+			let msg = textStatus;
+			if (jqXHR.responseJSON !== undefined) {
+				msg = jqXHR.responseJSON.message;
+			}
+			App.alert(app.alerts, null, msg);
 		});
 	}
 
@@ -104,14 +121,12 @@ class App {
 	}
 
 	auth() {
-		this.open('auth.html', this.root, function (root) {
-
-		});
+		this.open('auth.html', this.root);
 	}
 
 	logout() {
 		Cookies.remove('token');
-		this.auth();
+		app.auth();
 	}
 
 	devices() {
@@ -133,9 +148,10 @@ class App {
 				let str = '';
 				data.devices.forEach(function(item, i) {
 					str += `
-							<div class="col-12 card mt-2">
+							<div class="col-12 card mt-2" id="token_${item.id}">
 								<div class="card-block">
 									${item.device}
+									<a href="#" class="text-danger pull-right fa fa-times" aria-hidden="true" onclick="app.detach(${item.id}); return false;"></a>
 								</div>
 							</div>`;
 				});
@@ -232,6 +248,25 @@ class App {
 		}).fail(function (jqXHR, textStatus) {
 			App.noloader(target);
 			App.alert(app.alerts, null, textStatus);
+		});
+	}
+
+	detach(device_id) {
+		const row = $('#token_' + device_id);
+		App.loader(row, function () {
+			$.ajax({
+				url: app.url + '/user',
+				method: 'DELETE',
+				data: {id: device_id},
+				headers: {
+					"X-AuthToken":Cookies.get('token'),
+				},
+				xhrFields: {
+					withCredentials: true
+				}
+			}).done(function (data) {
+				row.slideUp();
+			});
 		});
 	}
 }
