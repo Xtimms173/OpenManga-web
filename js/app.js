@@ -3,8 +3,8 @@ class App {
 	constructor() {
 		this.root = $('#root');
 		this.alerts = $('#alerts');
-		//this.url = 'http://46.36.36.38:5000/api';
-		this.url = 'http://192.168.0.104:5000/api';
+		this.url = 'http://46.36.36.38:5000/api';
+		//this.url = 'http://192.168.0.104:5000/api';
 	}
 
 	init() {
@@ -16,7 +16,7 @@ class App {
 	}
 
 	error(jqXHR, textStatus) {
-		let l = this.root.find('.loader:visible');
+		let l = app.root.find('.loader:visible');
 		App.noloader(l.parent());
 		let msg = textStatus;
 		if (jqXHR.responseJSON !== undefined) {
@@ -269,8 +269,8 @@ class App {
 									<p class="card-text"><small class="text-muted">Last updated: ${new Date(item.timestamp).toISOString().slice(0, 10)}</small></p>
 								</div>
 								<div class="card-footer text-right">
-									<a class="fa fa-trash" href="#"  onclick="app.remove('favourites', ${item.manga.id}); return false;" title="Remove this manga"></a>
-									<a class="fa fa-external-link-square" target="_blank" href="${item.manga.path}" title="Open in website"></a>
+									<a class="fa fa-trash text-muted" href="#"  onclick="app.remove('favourites', ${item.manga.id}); return false;" title="Remove this manga"></a>
+									<a class="fa fa-external-link-square text-muted" target="_blank" href="${item.manga.path}" title="Open in website"></a>
 								</div>
 							</div>`;
 					});
