@@ -1,10 +1,32 @@
-<div class="container-fluid h-100">
+<!--<nav class="navbar navbar-inverse bg-primary">
+	<a class="navbar-brand" href="#">
+		<img src="assets/logo.png" height="30" class="d-inline-block align-top" alt="">
+		OpenManga Cloud
+	</a>
+	<ul class="navbar-nav">
+
+	</ul>
+</nav>-->
+<nav class="navbar navbar-toggleable-md navbar-inverse bg-primary">
+	<button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+		<span class="navbar-toggler-icon"></span>
+	</button>
+	<span class="navbar-brand">OpenManga Cloud</span>
+	<div class="collapse navbar-collapse" id="navbarNavDropdown">
+	<div class="col"></div>
+	<ul class="navbar-nav align-self-center">
+		<li class="nav-item">
+			<a class="nav-link fa fa-sign-out" href="#" onclick="app.logout(); return false;"></a>
+		</li>
+	</ul>
+	</div>
+</nav>
+<div class="container-fluid h-100 bg-faded">
 	<div class="row h-100">
 		<nav class="nav flex-column col-md-2 pl-0 pr-0 pt-1 inverse" id="menu">
-			<a class="nav-link menuitem active" href="#" onclick="app.devices(); return false;">Devices</a>
-			<a class="nav-link menuitem" href="#" onclick="app.history(); return false;">History</a>
+			<a class="nav-link menuitem active" href="#" onclick="app.history(); return false;">History</a>
 			<a class="nav-link menuitem" href="#" onclick="app.favourites(); return false;">Favourites</a>
-			<a class="nav-link" href="#" onclick="app.logout(); return false;">Logout</a>
+			<a class="nav-link menuitem" href="#" onclick="app.devices(); return false;">Devices</a>
 		</nav>
 		<div class="col-md-10 light h-100" id="target">
 			<div class="loader"></div>

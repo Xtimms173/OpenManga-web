@@ -1,7 +1,7 @@
-<div class="container h-100">
+<div class="container-fluid h-100 bg-faded">
 	<div class="row justify-content-center h-100">
-		<div class="col-sm-12 col-md-8 col-lg-6 align-self-center">
-			<form class="card" onsubmit="app.signin(this); return false;">
+		<div class="col-sm-12 col-md-6 col-lg-5 align-self-center" id="auth_block">
+			<form class="card mb-2" onsubmit="app.signin(this); return false;">
 				<div class="card-header">
 					Authorization
 				</div>
@@ -16,7 +16,7 @@
 					</div>
 				</div>
 				<div class="card-footer text-right">
-					<button type="submit" class="btn btn-success">Sign in</button>
+					<button type="submit" class="btn btn-accent">Sign in</button>
 				</div>
 			</form>
 		</div>

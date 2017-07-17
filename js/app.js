@@ -15,6 +15,16 @@ class App {
 		}
 	}
 
+	error(jqXHR, textStatus) {
+		let l = this.root.find('.loader:visible');
+		App.noloader(l.parent());
+		let msg = textStatus;
+		if (jqXHR.responseJSON !== undefined) {
+			msg = jqXHR.responseJSON.message;
+		}
+		App.alert(app.alerts, null, msg);
+	}
+
 	static empty(target) {
 		target.contents().filter(function () {
 			return !$(this).is('.loader');
@@ -23,18 +33,17 @@ class App {
 	}
 
 	static loader(where, callback) {
-		if (where.find('.loader').length) {
-			if (callback !== undefined) {
-				callback();
-			}
+		const l = where.find('> .loader');
+		if (l.length) {
+			l.fadeIn(callback);
 			return;
 		}
 		where.append('<div class="loader" style="display: none;"></div>');
-		where.find('.loader').fadeIn(callback);
+		where.find('> .loader').fadeIn(callback);
 	}
 
 	static noloader(where, callback) {
-		where.find('.loader').fadeOut(function () {
+		where.find('> .loader').fadeOut(function () {
 			$(this).remove();
 			if (callback !== undefined) {
 				callback();
@@ -79,10 +88,7 @@ class App {
 			}).done(function (html) {
 				App.empty(where).append(html);
 				App.noloader(where, callback);
-			}).fail(function (jqXHR, textStatus) {
-				App.noloader(where);
-				App.alert(app.alerts, null, textStatus);
-			});
+			}).fail(app.error);
 		});
 	}
 
@@ -101,7 +107,6 @@ class App {
 				withCredentials: true
 			}
 		}).done(function (data) {
-			App.noloader(form);
 			console.log(data);
 			if (data.state === 'success') {
 				form.fadeOut(function () {
@@ -109,23 +114,17 @@ class App {
 					app.content();
 				});
 			} else {
+				App.noloader(form);
 				App.alert(app.alerts, null, data.message);
 			}
-		}).fail(function (jqXHR, textStatus) {
-			App.noloader(form);
-			let msg = textStatus;
-			if (jqXHR.responseJSON !== undefined) {
-				msg = jqXHR.responseJSON.message;
-			}
-			App.alert(app.alerts, null, msg);
-		});
+		}).fail(app.error);
 	}
 
 	content() {
 		this.open('content.html', this.root, function (root) {
-			let nav = new Navigation(root.find('#menu'));
+			let nav = new Navigation(app.root.find('#menu'));
 			//nav.setActiveItem(0);
-			app.devices();
+			app.history();
 		});
 	}
 
@@ -134,8 +133,8 @@ class App {
 	}
 
 	logout() {
+		$('.navbar').slideUp();
 		App.loader(this.root, function () {
-			Cookies.remove('token');
 			$.ajax({
 				url: app.url + '/user',
 				method: 'DELETE',
@@ -147,8 +146,9 @@ class App {
 					withCredentials: true
 				}
 			}).done(function (data) {
+				Cookies.remove('token');
 				app.auth();
-			});
+			}).fail(app.error);
 		});
 	}
 
@@ -168,13 +168,18 @@ class App {
 			}).done(function (data) {
 				console.log(data);
 				if (data.state === 'success') {
+					if (data.devices.length === 0) {
+						target.append('<div class="row h-100"><div class="col align-self-center text-center text-muted">You have no any attached devices</div></div>');
+						App.noloader(target);
+						return;
+					}
 					let str = '';
 					data.devices.forEach(function (item, i) {
 						str += `
 							<div class="col-12 card mt-2" id="token_${item.id}">
 								<div class="card-block">
 									${item.device}
-									<a href="#" class="text-danger pull-right fa fa-times" aria-hidden="true" onclick="app.detach(${item.id}); return false;"></a>
+									<a href="#" class="text-accent pull-right fa fa-times" aria-hidden="true" onclick="app.detach(${item.id}); return false;"></a>
 								</div>
 							</div>`;
 					});
@@ -183,10 +188,7 @@ class App {
 				} else {
 					App.alert(app.alerts, null, data.message);
 				}
-			}).fail(function (jqXHR, textStatus) {
-				App.noloader(target);
-				App.alert(app.alerts, null, textStatus);
-			});
+			}).fail(app.error);
 		});
 	}
 
@@ -205,6 +207,11 @@ class App {
 				}
 			}).done(function (data) {
 				console.log(data);
+				if (data.all.length === 0) {
+					target.append('<div class="row h-100"><div class="col align-self-center text-center text-muted">You history is empty</div></div>');
+					App.noloader(target);
+					return;
+				}
 				if (data.state === 'success') {
 					let str = '<div class="card-columns mt-2">';
 					data.all.forEach(function (item, i) {
@@ -216,8 +223,8 @@ class App {
 									<p class="card-text"><small class="text-muted">Last updated: ${new Date(item.timestamp).toISOString().slice(0, 10)}</small></p>
 								</div>
 								<div class="card-footer text-right">
-									<a class="fa fa-trash-o" href="#" onclick="app.remove('history', ${item.manga.id}); return false;" title="Remove this manga"></a>
-									<a class="fa fa-external-link" target="_blank" href="${item.manga.path}" title="Open in website"></a>
+									<a class="text-muted fa fa-trash" href="#" onclick="app.remove('history', ${item.manga.id}); return false;" title="Remove this manga"></a>
+									<a class="text-muted fa fa-external-link-square" target="_blank" href="${item.manga.path}" title="Open in website"></a>
 								</div>
 							</div>`;
 					});
@@ -227,10 +234,7 @@ class App {
 				} else {
 					App.alert(app.alerts, null, data.message);
 				}
-			}).fail(function (jqXHR, textStatus) {
-				App.noloader(target);
-				App.alert(app.alerts, null, textStatus);
-			});
+			}).fail(app.error);
 		});
 	}
 
@@ -250,6 +254,11 @@ class App {
 			}).done(function (data) {
 				console.log(data);
 				if (data.state === 'success') {
+					if (data.all.length === 0) {
+						target.append('<div class="row h-100"><div class="col align-self-center text-center text-muted">You have no any favourite manga</div></div>');
+						App.noloader(target);
+						return;
+					}
 					let str = '<div class="card-columns mt-2">';
 					data.all.forEach(function (item, i) {
 						str += `<div class="card" id="manga_${item.manga.id}">
@@ -260,8 +269,8 @@ class App {
 									<p class="card-text"><small class="text-muted">Last updated: ${new Date(item.timestamp).toISOString().slice(0, 10)}</small></p>
 								</div>
 								<div class="card-footer text-right">
-									<a class="fa fa-trash-o" href="#"  onclick="app.remove('favourites', ${item.manga.id}); return false;" title="Remove this manga"></a>
-									<a class="fa fa-external-link" target="_blank" href="${item.manga.path}" title="Open in website"></a>
+									<a class="fa fa-trash" href="#"  onclick="app.remove('favourites', ${item.manga.id}); return false;" title="Remove this manga"></a>
+									<a class="fa fa-external-link-square" target="_blank" href="${item.manga.path}" title="Open in website"></a>
 								</div>
 							</div>`;
 					});
@@ -271,10 +280,7 @@ class App {
 				} else {
 					App.alert(app.alerts, null, data.message);
 				}
-			}).fail(function (jqXHR, textStatus) {
-				App.noloader(target);
-				App.alert(app.alerts, null, textStatus);
-			});
+			}).fail(app.error);
 		});
 	}
 
@@ -293,7 +299,7 @@ class App {
 				}
 			}).done(function (data) {
 				row.slideUp();
-			});
+			}).fail(app.error);
 		});
 	}
 
@@ -312,7 +318,7 @@ class App {
 				}
 			}).done(function (data) {
 				card.fadeOut();
-			});
+			}).fail(app.error);
 		});
 	}
 }
