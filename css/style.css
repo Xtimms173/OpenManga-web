@@ -7,13 +7,22 @@
 	background-color: #a0aeff;
 }
 
+#target {
+	overflow-y: auto;
+}
+
 .loader {
 	position: absolute;
 	top: 0;
 	bottom: 0;
 	left: 0;
 	right: 0;
+	z-index: 9999999;
 	background-color: #a0aeff;
+}
+
+.light {
+	background-color: white;
 }
 
 .light .loader,
@@ -43,6 +52,18 @@
 .card .loader:after {
 	border-top-color: #a0aeff;
 	border-bottom-color: #a0aeff;
+}
+
+#alerts {
+	position: absolute;
+	left: 25%;
+	right: 25%;
+	z-index: 10;
+}
+
+#alerts > .alert {
+	margin-top: 4px;
+	margin-bottom: 4px;
 }
 
 @keyframes cssload-spin {
@@ -80,4 +101,18 @@
 #menu .nav-link.active {
 	background-color: white;
 	color: #6e6e6e;
+}
+
+.card-columns {
+	column-count: 4;
+}
+
+.card-footer {
+	padding: .4rem 1rem;
+}
+
+.card-footer a {
+	text-decoration: none !important;
+	font-weight: bold;
+	color: #515fb1;
 }

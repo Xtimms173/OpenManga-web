@@ -1,12 +1,12 @@
 <div class="container-fluid h-100">
 	<div class="row h-100">
 		<nav class="nav flex-column col-md-2 pl-0 pr-0 pt-1 inverse" id="menu">
-			<a class="nav-link active" href="#" data-open="devices.html" data-target="#target">Devices</a>
-			<a class="nav-link" href="#">History</a>
-			<a class="nav-link" href="#">Favourites</a>
-			<a class="nav-link" href="#" data-action="logout">Logout</a>
+			<a class="nav-link menuitem active" href="#" onclick="app.devices(); return false;">Devices</a>
+			<a class="nav-link menuitem" href="#" onclick="app.history(); return false;">History</a>
+			<a class="nav-link menuitem" href="#" onclick="app.favourites(); return false;">Favourites</a>
+			<a class="nav-link" href="#" onclick="app.logout(); return false;">Logout</a>
 		</nav>
-		<div class="col light h-100" id="target">
+		<div class="col-md-10 light h-100" id="target">
 			<div class="loader"></div>
 		</div>
 	</div>
