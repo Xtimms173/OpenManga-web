@@ -3,7 +3,7 @@ class App {
 	constructor() {
 		this.root = $('#root');
 		this.alerts = $('#alerts');
-		this.url = 'https://openmanga.pythonanywhere.com/api';
+		this.url = 'https://openmanga.pythonanywhere.com/api/v1';
 		//this.url = 'http://192.168.0.104:5000/api';
 	}
 
